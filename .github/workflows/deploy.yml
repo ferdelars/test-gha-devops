@@ -5,25 +5,33 @@ on:
     branches:
       - main
 
-
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v4
-      - name: Nodejs Build
+      - name: Node.js Build
         uses: actions/setup-node@v4
         with:
-          node-version: '20.x'
+          node-version: '14.x'
       - run: npm ci
       - run: npm run build
+
+      - name: Get Cloudflare Account ID
+        id: get_account_id
+        run: |
+          accountId=$(curl -sX GET "https://api.cloudflare.com/client/v4/accounts" \
+              -H "Authorization: Bearer ${{ secrets.CLOUDFARE_API_TOKEN }}" \
+              -H "Content-Type: application/json" \
+              | jq -r '.result[0].id')
+          echo "::set-output name=account_id::$accountId"
 
       - name: Publish to Cloudflare Pages
         uses: cloudflare/pages-action@v1
         with:
           apiToken: ${{ secrets.CLOUDFARE_API_TOKEN }}
-          accountId: 9O5S5sL5s2zQMUsLTmPLOtyQerZyOqK_fJ7c4gdI
+          accountId: ${{ steps.get_account_id.outputs.account_id }}
           projectName: sample-site
           directory: dist
           wranglerVersion: '3'
