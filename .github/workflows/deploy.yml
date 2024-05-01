@@ -1,37 +1,23 @@
-name: Node.js
+name: Deploy to Production
 
 on:
   push:
     branches:
-      - main
+      - master
 
 jobs:
-  build:
+  deploy:
+    name: Deploy Application
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
-      - name: Node.js Build
-        uses: actions/setup-node@v4
-        with:
-          node-version: '14.x'
-      - run: npm ci
-      - run: npm run build
+      - name: Checkout Repository
+        uses: actions/checkout@v2
 
-      - name: Get Cloudflare Account ID
-        id: get_account_id
+      # Add your deployment steps here, such as building and deploying your application
+      - name: Build and Deploy
         run: |
-          accountId=$(curl -sX GET "https://api.cloudflare.com/client/v4/accounts" \
-              -H "Authorization: Bearer ${{ secrets.CLOUDFARE_API_TOKEN }}" \
-              -H "Content-Type: application/json" \
-              | jq -r '.result[0].id')
-          echo "::set-output name=account_id::$accountId"
-
-      - name: Publish to Cloudflare Pages
-        uses: cloudflare/pages-action@v1
-        with:
-          apiToken: ${{ secrets.CLOUDFARE_API_TOKEN }}
-          accountId: ${{ steps.get_account_id.outputs.account_id }}
-          projectName: sample-site
-          directory: dist
-          wranglerVersion: '3'
+          # Example commands, replace with your actual deployment commands
+          npm install
+          npm run build
+          # Your deployment script/command here
