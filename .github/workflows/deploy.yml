@@ -30,11 +30,20 @@ jobs:
       - run: npm ci
       - run: npm run build
 
+      - name: Get Cloudflare Account ID
+        id: get_account_id
+        run: |
+          accountId=$(curl -sX GET "https://api.cloudflare.com/client/v4/accounts" \
+              -H "Authorization: Bearer ${{ secrets.CLOUDFLARE_API_TOKEN }}" \
+              -H "Content-Type: application/json" \
+              | jq -r '.result[0].id')
+          echo "::set-output name=account_id::$accountId"
+
       - name: Publish to Cloudflare Pages
         uses: cloudflare/pages-action@v1
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: 9O5S5sL5s2zQMUsLTmPLOtyQerZyOqK_fJ7c4gdI
+          accountId: ${{ steps.get_account_id.outputs.account_id }}
           projectName: sample-site
           directory: dist
           wranglerVersion: '3'
